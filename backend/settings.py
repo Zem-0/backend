@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+import dj_database_url
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,16 +26,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key')
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("No SECRET_KEY set in environment variables")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # Update ALLOWED_HOSTS with your actual domain
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'your-domain.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com']
 
 # Add CSRF trusted origins
-CSRF_TRUSTED_ORIGINS = ['https://your-domain.com']
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
 # Static files configuration
 STATIC_URL = '/static/'
@@ -104,6 +111,15 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Render PostgreSQL database configuration
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
+    }
 
 
 # Password validation
